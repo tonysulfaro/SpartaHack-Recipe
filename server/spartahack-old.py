@@ -88,8 +88,8 @@ def get_food(food_string):
                     break
                 else:
                     index += 1
-    updated_list = set(food_list)
-    print(updated_list)
+
+    return food_list[0]
 
 
 def get_info(stringh, size):
@@ -198,7 +198,8 @@ def hello():
 def get_albums():
     if request.method == 'GET':
         stringh = request.args.get('query')
-        resp = make_response(get_info(stringh, 10), 200)
+        food_string = get_food(stringh)
+        resp = make_response(get_info(food_string, 10), 200)
         resp.headers['Content-Type'] = 'application/json'
         resp.headers['Access-Control-Allow-Origin'] = 'http://127.0.0.1:50721'
         return resp
