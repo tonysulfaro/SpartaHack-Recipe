@@ -30,6 +30,11 @@
     font-size: 23px;
 }
 
+.img-food-card {
+    object-fit: cover;
+    overflow: hidden;
+}
+
 .parallax {
     /* The image used */
     background: linear-gradient(rgba(0, 0, 0, .4), rgba(0, 0, 0, .2)), url("images/baking-bread.jpg");

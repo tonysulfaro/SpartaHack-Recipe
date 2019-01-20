@@ -52,26 +52,32 @@ def get_food():
     print(updated_list)
 
 
-def get_info(string, size):
-    response = requests.get(
-        "https://api.edamam.com/search?q=chicken&app_id=d63abbc7&app_key=ad82d4418f075d5a656da60a47ad8246&from=0&to=" + str(
-            size))
+def get_info(string,size):
+    response = requests.get("https://api.edamam.com/search?q=chicken&app_id=d63abbc7&app_key=ad82d4418f075d5a656da60a47ad8246&from=0&to="+str(size))
     file = response.json()
     url_list = []
     img_list = []
     ingred_list = []
     instruction_list1 = []
+    label_list = []
+
+
+    for i in range(size):
+        label_list.append(file['hits'][i]['recipe']['label'])
+
+
     for i in range(size):
         url_list.append(file['hits'][i]['recipe']['url'])
-    print(url_list)
+
 
     for i in range(size):
         img_list.append(file['hits'][i]['recipe']['image'])
-    print(img_list)
+
 
     for i in range(size):
         ingred_list.append(file['hits'][i]['recipe']['ingredientLines'])
-    print(ingred_list)
+
+
 
     for i in range(size):
         response_1 = requests.get(url_list[0]).text
@@ -92,19 +98,22 @@ def get_info(string, size):
                 take_next = False
 
         instruction_list1.append(instruction_list)
-    print(instruction_list1)
-    return (make_json(url_list, img_list, ingred_list, instruction_list1, size))
+    return(make_json(url_list,label_list,img_list,ingred_list,instruction_list1,size))
 
 
-def make_json(url_list, img_list, ingred_list, instruction_list, size):
+
+def make_json(url_list,name_list,img_list,ingred_list,instruction_list,size):
     json_list = []
     for x in range(size):
         url = url_list[x]
-        img = img_list
-        ingred = ingred_list
-        instruction = instruction_list
-        fin_dict = {"url": url, "image": img, "instruction": instruction, "ingred": ingred_list}
-        json_list.append(fin_dict)
+        img = img_list[x]
+        name = name_list[x]
+        ingred  = ingred_list[x]
+        instruction = instruction_list[x]
+        fin_dict = {"url":url, "label":name, "image" : img, "instruction" : instruction, "ingred" : ingred }
+
+        json_list.append( fin_dict)
+
     return json.dumps(json_list)
 
 
