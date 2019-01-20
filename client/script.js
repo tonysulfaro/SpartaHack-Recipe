@@ -40,7 +40,7 @@ function generateHome(search_term) {
                         <div class="card-body">
                             <h5 class="card-title">` + recipe_label + `</h5>
                             <p class="card-text">Some quick example text to build on the card title and make up the bulk of the card's content.</p>
-                            <a href="` + recipe_url + `" class="btn btn-secondary">Start</a>
+                            <button onclick=start_recipe() class="btn btn-secondary">Start</a>
                         </div>
                     </div>
                 </div>`;
@@ -52,7 +52,7 @@ function generateHome(search_term) {
                         <div class="card-body">
                             <h5 class="card-title">Card title</h5>
                             <p class="card-text">Some quick example text to build on the card title and make up the bulk of the card's content.</p>
-                            <a href="` + recipe_url + `" class="btn btn-secondary">Start</a>
+                            <button class="btn btn-secondary">Start</button>
                         </div>
                     </div>
                 </div>`;
@@ -139,7 +139,7 @@ function generateRecipieResults(search_term) {
                         <div class="card-body">
                             <h5 class="card-title">` + recipe_label + `</h5>
                             <p class="card-text">Some quick example text to build on the card title and make up the bulk of the card's content.</p>
-                            <a href="` + recipe_url + `" class="btn btn-secondary">Start</a>
+                            <button onclick=start_recipe() class="btn btn-secondary">Start</button>
                         </div>
                     </div>
                 </div>`;
@@ -151,7 +151,7 @@ function generateRecipieResults(search_term) {
                         <div class="card-body">
                             <h5 class="card-title">Card title</h5>
                             <p class="card-text">Some quick example text to build on the card title and make up the bulk of the card's content.</p>
-                            <a href="` + recipe_url + `" class="btn btn-secondary">Start</a>
+                            <button class="btn btn-secondary">Start</button>
                         </div>
                     </div>
                 </div>`;
@@ -161,4 +161,58 @@ function generateRecipieResults(search_term) {
         featured_container.insertAdjacentHTML('beforeend', previews);
         console.log(featured_container);
     }
+}
+
+function start_recipe() {
+
+    let search_thing = "Chicken Vesuvio"
+
+    // remove all stuff
+    var myNode = document.getElementById("main_container");
+    while (myNode.firstChild) {
+        myNode.removeChild(myNode.firstChild);
+    }
+
+    let featured_container = document.getElementById("main_container");
+    let parts = `<br>
+        <br>
+        <br>
+        <br>
+
+        <div id="search_results" class="container">
+            <h1 id="search_header">` + search_thing + `</h1>
+            <br>
+<h3>Steps</h3>
+<div class="row">
+
+
+
+<div class="col-md-4">
+<p>* 1/2 cup olive oil</p>
+<p>* 5 cloves garlic, peeled</p>
+<p>* 2 large russet potatoes, peeled and cut into chunks</p>
+<p>* 1 3-4 pound chicken, cut into 8 pieces (or 3 pound chicken legs)</p>
+<p>* 3/4 cup white wine</p>
+<p>* 3/4 cup chicken stock</p>
+<p>* 3 tablespoons chopped parsley</p>
+<p>* 1 tablespoon dried oregano</p>
+<p>* Salt and pepper</p>
+<p>* 1 cup frozen peas, thawed</p>
+</div>
+
+<div class="col-md-4">
+<img src="https://www.edamam.com/web-img/e42/e42f9119813e890af34c259785ae1cfb.jpg">
+</div>
+
+
+
+</div>
+<br>
+
+<p>1: Heat an oven to 325 degrees.  In a roasting pan (or a large (14-inch) oven-proof skillet), heat the olive oil over medium until shimmering.  Add the potatoes and garlic and cook until golden brown, about 12 minutes.  Remove to a plate, leaving behind as much oil as possible.</p>
+<p>2: Add the chicken to the skillet, skin-side down. Cook until golden and crisp, then turn and cook the other side until golden as well. Add the wine and cook until it reduces by half.</p>
+<p>3: Return the garlic and potatoes to the pan, along with the chicken stock, parsley, oregano, and a pinch of salt and pepper. Transfer to the oven and cook, uncovered, until the chicken is cooked through, about 45 minutes. Add the peas to the pan with 5 minutes left in the cooking time. Serve with the roasting juices in the pan.</p>
+        </div>`;
+    featured_container.insertAdjacentHTML('beforeend', parts);
+
 }
