@@ -1,4 +1,26 @@
-function generateHome() {
+function generateHome(search_term) {
+
+    var url = 'http://127.0.0.1:5000/recipe';
+    var obj = ""
+
+    var request = new XMLHttpRequest();
+
+    request.onload = dumpResponse;
+    // Initialize a request
+    request.open('get', url)
+    // Send it
+    request.send()
+
+    function dumpResponse() {
+        // `this` will refer to the `XMLHTTPRequest` object that executes this function
+        obj = JSON.parse(this.responseText);
+        console.log(obj);
+    }
+
+    //    $.getJSON(url, function (data) {
+    //        console.log(data);
+    //    });
+
     let featured_container = document.getElementById("featured_container");
 
     let count = 0;
