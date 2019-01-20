@@ -12,13 +12,19 @@ fp = open("foodlist.txt", "r")
 for i in fp:
     check_list = i.split(",")
 
-documents = {'documents' : [
-  {'id': '1', 'language': 'en', 'text': 'How do I lobster recipe.'},]}
+documents = {'documents': [
+    {'id': '1', 'language': 'en', 'text': 'How do I lobster recipe.'},
+    {'id': '2', 'language': 'en', 'text': 'one hot dog please.'},
+    {'id': '3', 'language': 'en', 'text': 'How do I cook a pizza?'},
+    {'id': '4', 'language': 'en', 'text': 'Can you find me a way to make catfish?'}
+]}
 
 
 def get_food():
     response = requests.post("https://westcentralus.api.cognitive.microsoft.com/text/analytics/v2.0/keyPhrases",
                              headers=headers, json=documents)
+    # print(response.content)
+    # response_json = json.loads(response.content)
     key_phrases = response.json()
     food_list = []
 
@@ -43,11 +49,12 @@ def get_food():
                 else:
                     index += 1
     updated_list = set(food_list)
+    print(updated_list)
 
 
 def get_info(string, size):
     response = requests.get(
-        "https://api.edamam.com/search?q=" + string + "&app_id=d63abbc7&app_key=ad82d4418f075d5a656da60a47ad8246&from=0&to=" + str(
+        "https://api.edamam.com/search?q=chicken&app_id=d63abbc7&app_key=ad82d4418f075d5a656da60a47ad8246&from=0&to=" + str(
             size))
     file = response.json()
     url_list = []
@@ -60,9 +67,7 @@ def get_info(string, size):
         label_list.append(file['hits'][i]['recipe']['label'])
 
     for i in range(size):
-        print(file['hits'][i]['recipe']['url'])
         url_list.append(file['hits'][i]['recipe']['url'])
-    print(url_list, 'hhhhhhhhhhhhhhhhhhhhhhhhhhhhh')
 
     for i in range(size):
         img_list.append(file['hits'][i]['recipe']['image'])
@@ -73,18 +78,7 @@ def get_info(string, size):
     for i in range(size):
         response_1 = requests.get(url_list[0]).text
         soup = BeautifulSoup(response_1)
-        print(url_list)
-        count = 0
-        print(url_list, 'jjghlu')
-        if count == size:
-            pass
-        else:
-            try:
-                mydivs = soup.find("ol", {"class": "recipe-procedures-list instructions"})
-                count += 1
-            except:
-                print('hi')
-                continue
+        mydivs = soup.find("ol", {"class": "recipe-procedures-list instructions"})
         string = str(mydivs.encode('utf-8'))
         list = string.split('<p>')
         take_next = False
@@ -105,9 +99,7 @@ def get_info(string, size):
 
 def make_json(url_list, name_list, img_list, ingred_list, instruction_list, size):
     json_list = []
-    print(url_list, 'kkkkkkkkkkkkkkkkkkkkkkkk')
     for x in range(size):
-        print(name_list)
         url = url_list[x]
         img = img_list[x]
         name = name_list[x]
@@ -118,36 +110,6 @@ def make_json(url_list, name_list, img_list, ingred_list, instruction_list, size
         json_list.append(fin_dict)
 
     return json.dumps(json_list)
-
-
-def speech_to_text():
-    # Creates an instance of a speech config with specified subscription key and service region.
-    # Replace with your own subscription key and service region (e.g., "westus").
-    speech_key, service_region = "1f65cf15a97b424cbc105f002631a6db", "westus"
-    speech_config = speechsdk.SpeechConfig(subscription=speech_key, region=service_region)
-
-    # Creates a recognizer with the given settings
-    speech_recognizer = speechsdk.SpeechRecognizer(speech_config=speech_config)
-
-    print("Say something...")
-
-    # Performs recognition. recognize_once() returns when the first utterance has been recognized,
-    # so it is suitable only for single shot recognition like command or query. For long-running
-    # recognition, use start_continuous_recognition() instead, or if you want to run recognition in a
-    # non-blocking manner, use recognize_once_async().
-    result = speech_recognizer.recognize_once()
-
-    # Checks result.
-    if result.reason == speechsdk.ResultReason.RecognizedSpeech:
-        print("Recognized: {}".format(result.text))
-    elif result.reason == speechsdk.ResultReason.NoMatch:
-        print("No speech could be recognized: {}".format(result.no_match_details))
-    elif result.reason == speechsdk.ResultReason.Canceled:
-        cancellation_details = result.cancellation_details
-        print("Speech Recognition canceled: {}".format(cancellation_details.reason))
-        if cancellation_details.reason == speechsdk.CancellationReason.Error:
-            print("Error details: {}".format(cancellation_details.error_details))
-    return (result.text)
 
 
 app = Flask(__name__)
@@ -162,12 +124,11 @@ def hello():
     return "Hello World!"
 
 
-
 @app.route('/recipe', methods=['GET', 'POST'])
 def get_albums():
     if request.method == 'GET':
         string = request.args.get('query')
-        resp = make_response(get_info(string, 6), 200)
+        resp = make_response(get_info(string, 3), 200)
         resp.headers['Content-Type'] = 'application/json'
         resp.headers['Access-Control-Allow-Origin'] = 'http://127.0.0.1:50721'
         return resp
@@ -175,5 +136,5 @@ def get_albums():
         pass
 
 
-subscription_key = "a2398892e90140698df64526fb7c5919"
-app.run(host='0.0.0.0', port=5000)
+if __name__ == '__main__':
+    app.run(host='0.0.0.0', port=9001)

@@ -1,8 +1,58 @@
 import http.client, urllib.request, urllib.parse, urllib.error, base64, requests, json
 from pprint import pprint
-from flask import Flask, session, redirect, url_for, escape, request
-from flask import make_response
+from flask import Flask, session, redirect, url_for, escape, request, make_response
 from bs4 import BeautifulSoup
+import azure.cognitiveservices.speech as speechsdk
+import os, requests, time
+from xml.etree import ElementTree
+
+
+##try: input = raw_input
+# except NameError: pass
+
+class TextToSpeech(object):
+    def __init__(self, subscription_key):
+        self.subscription_key = subscription_key
+        self.tts = input("What would you like to convert to speech: ")
+        self.timestr = time.strftime("%Y%m%d-%H%M")
+        self.access_token = None
+
+    def get_token(self):
+        fetch_token_url = "https://westus.api.cognitive.microsoft.com/sts/v1.0/issueToken"
+        headers = {
+            'Ocp-Apim-Subscription-Key': self.subscription_key
+        }
+        response = requests.post(fetch_token_url, headers=headers)
+        self.access_token = str(response.text)
+
+    def save_audio(self):
+        base_url = 'https://westus.tts.speech.microsoft.com/'
+        path = 'cognitiveservices/v1'
+        constructed_url = base_url + path
+        headers = {
+            'Authorization': 'Bearer ' + self.access_token,
+            'Content-Type': 'application/ssml+xml',
+            'X-Microsoft-OutputFormat': 'riff-24khz-16bit-mono-pcm',
+            'User-Agent': 'YOUR_RESOURCE_NAME'
+        }
+        xml_body = ElementTree.Element('speak', version='1.0')
+        xml_body.set('{http://www.w3.org/XML/1998/namespace}lang', 'en-us')
+        voice = ElementTree.SubElement(xml_body, 'voice')
+        voice.set('{http://www.w3.org/XML/1998/namespace}lang', 'en-US')
+        voice.set('name', 'Microsoft Server Speech Text to Speech Voice (en-US, Guy24KRUS)')
+        voice.text = self.tts
+        body = ElementTree.tostring(xml_body)
+        response = requests.post(constructed_url, headers=headers, data=body)
+        if response.status_code == 200:
+            with open('sample-' + self.timestr + '.wav', 'wb') as audio:
+                audio.write(response.content)
+                print("\nStatus code: " + str(response.status_code) + "\nYour TTS is ready for playback.\n")
+        else:
+            print("\nStatus code: " + str(
+                response.status_code) + "\nSomething went wrong. Check your subscription key and headers.\n")
+
+
+
 
 headers = {
     # Request headers
@@ -12,43 +62,44 @@ fp = open("foodlist.txt", "r")
 for i in fp:
     check_list = i.split(",")
 
+
 documents = {'documents' : [
-  {'id': '1', 'language': 'en', 'text': 'How do I lobster recipe.'},]}
+  {'id': '1', 'language': 'en', 'text': 'How do I lobster recipe.'},
 
-
+]}
+    
 def get_food():
-    response = requests.post("https://westcentralus.api.cognitive.microsoft.com/text/analytics/v2.0/keyPhrases",
-                             headers=headers, json=documents)
+    response = requests.post("https://westcentralus.api.cognitive.microsoft.com/text/analytics/v2.0/keyPhrases",headers = headers,json = documents)
     key_phrases = response.json()
     food_list = []
 
     index = 0
     for i in key_phrases['documents'][0]['keyPhrases']:
-
+    
         if 'recipe' in i:
             hold = i.split()
             i = hold[0]
             if i in check_list:
                 food_list.append(i)
-
+                
                 break
-
-        if (key_phrases['documents'][0]['keyPhrases'][index] in check_list):
+        
+    
+        if(key_phrases['documents'][0]['keyPhrases'][index] in check_list):
             food_list.append(key_phrases['documents'][0]['keyPhrases'][index])
         else:
-            while (True):
-                if (key_phrases['documents'][0]['keyPhrases'][index] in check_list):
+            while(True):
+                if(key_phrases['documents'][0]['keyPhrases'][index] in check_list):
                     food_list.append(key_phrases['documents'][0]['keyPhrases'][index])
                     break
                 else:
-                    index += 1
+                    index+=1
     updated_list = set(food_list)
 
 
-def get_info(string, size):
-    response = requests.get(
-        "https://api.edamam.com/search?q=" + string + "&app_id=d63abbc7&app_key=ad82d4418f075d5a656da60a47ad8246&from=0&to=" + str(
-            size))
+
+def get_info(string,size):
+    response = requests.get("https://api.edamam.com/search?q="+string+"&app_id=d63abbc7&app_key=ad82d4418f075d5a656da60a47ad8246&from=0&to="+str(size))
     file = response.json()
     url_list = []
     img_list = []
@@ -56,32 +107,37 @@ def get_info(string, size):
     instruction_list1 = []
     label_list = []
 
+
     for i in range(size):
         label_list.append(file['hits'][i]['recipe']['label'])
+
 
     for i in range(size):
         print(file['hits'][i]['recipe']['url'])
         url_list.append(file['hits'][i]['recipe']['url'])
-    print(url_list, 'hhhhhhhhhhhhhhhhhhhhhhhhhhhhh')
+    print(url_list,'hhhhhhhhhhhhhhhhhhhhhhhhhhhhh')
 
     for i in range(size):
         img_list.append(file['hits'][i]['recipe']['image'])
 
+
     for i in range(size):
         ingred_list.append(file['hits'][i]['recipe']['ingredientLines'])
+
+
 
     for i in range(size):
         response_1 = requests.get(url_list[0]).text
         soup = BeautifulSoup(response_1)
         print(url_list)
         count = 0
-        print(url_list, 'jjghlu')
+        print(url_list,'jjghlu')
         if count == size:
             pass
         else:
             try:
                 mydivs = soup.find("ol", {"class": "recipe-procedures-list instructions"})
-                count += 1
+                count+=1
             except:
                 print('hi')
                 continue
@@ -100,24 +156,31 @@ def get_info(string, size):
                 take_next = False
 
         instruction_list1.append(instruction_list)
-    return (make_json(url_list, label_list, img_list, ingred_list, instruction_list1, size))
+    return(make_json(url_list,label_list,img_list,ingred_list,instruction_list1,size))
 
 
-def make_json(url_list, name_list, img_list, ingred_list, instruction_list, size):
+
+
+
+
+def make_json(url_list,name_list,img_list,ingred_list,instruction_list,size):
     json_list = []
-    print(url_list, 'kkkkkkkkkkkkkkkkkkkkkkkk')
+    print(url_list,'kkkkkkkkkkkkkkkkkkkkkkkk')
     for x in range(size):
         print(name_list)
         url = url_list[x]
         img = img_list[x]
         name = name_list[x]
-        ingred = ingred_list[x]
+        ingred  = ingred_list[x]
         instruction = instruction_list[x]
-        fin_dict = {"url": url, "label": name, "image": img, "instruction": instruction, "ingred": ingred}
+        fin_dict = {"url":url, "label":name, "image" : img, "instruction" : instruction, "ingred" : ingred }
 
-        json_list.append(fin_dict)
+        json_list.append( fin_dict)
 
     return json.dumps(json_list)
+
+
+
 
 
 def speech_to_text():
@@ -147,33 +210,27 @@ def speech_to_text():
         print("Speech Recognition canceled: {}".format(cancellation_details.reason))
         if cancellation_details.reason == speechsdk.CancellationReason.Error:
             print("Error details: {}".format(cancellation_details.error_details))
-    return (result.text)
-
-
+    return(result.text)
 app = Flask(__name__)
 
 # Set the secret key to some random bytes. Keep this really secret!
 app.secret_key = b'_5#y2L"F4Q8z\n\xec]/'
-
-
-@app.route('/')
-def hello():
-    print('hi')
-    return "Hello World!"
-
-
-
 @app.route('/recipe', methods=['GET', 'POST'])
 def get_albums():
     if request.method == 'GET':
-        string = request.args.get('query')
-        resp = make_response(get_info(string, 6), 200)
+        stringh = request.args.get('query')
+        resp = make_response(get_info(str(stringh),10), 200)
         resp.headers['Content-Type'] = 'application/json'
-        resp.headers['Access-Control-Allow-Origin'] = 'http://127.0.0.1:50721'
+        resp.headers['Access-Control-Allow-Origin'] = 'http://127.0.0.1:50721/'
         return resp
     elif request.method == 'POST':
         pass
 
-
 subscription_key = "a2398892e90140698df64526fb7c5919"
-app.run(host='0.0.0.0', port=5000)
+#speech_to_text()
+#app1 = TextToSpeech(subscription_key)
+#app1.get_token()
+#app1.save_audio()
+app.run(host='0.0.0.0', port=9999)
+    
+    

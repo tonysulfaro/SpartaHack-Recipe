@@ -1,6 +1,6 @@
 function generateHome(search_term) {
 
-    var url = 'http://127.0.0.1:5000/recipe';
+    var url = 'http://127.0.0.1:5000/recipe?query=chicken';
     var obj = ""
 
     var request = new XMLHttpRequest();
@@ -124,7 +124,7 @@ function generateRecipieResults(search_term) {
         let count = 0;
         let previews = `<div class="row">`;
 
-        for (var i = 0; i < 3; i++) {
+        for (var i = 0; i < 6; i++) {
             console.log(JSON.stringify(obj[i].url))
             console.log(JSON.stringify(obj[i].image));
 
